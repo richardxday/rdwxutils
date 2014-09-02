@@ -1,0 +1,12 @@
+
+AUTOMAKE_OPTIONS = foreign
+
+include doxygen.am
+
+SUBDIRS = src
+
+EXTRA_DIST = README COPYING autogen.sh
+
+CLEANFILES = $(DX_CLEANFILES)
+
+ACLOCAL_FLAGS = -I m4
