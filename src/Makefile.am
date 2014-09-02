@@ -24,4 +24,4 @@ viewer_CPPFLAGS =								\
 
 viewer_SOURCES = viewer.cpp viewerapp.cpp
 
-DISTCLEANFILES = rdwxutils-stdint.h
+DISTCLEANFILES =
