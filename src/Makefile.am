@@ -9,7 +9,7 @@ redirector_LDADD =								\
 redirector_CPPFLAGS =							\
 	$(RDLIB_CFLAGS)								\
 	$(RDUTILS_CFLAGS)							\
-	$(WX_CFLAGS)
+	$(WX_CPPFLAGS)
 
 redirector_SOURCES = redirector.cpp redirectorwindow.cpp
 
@@ -20,7 +20,7 @@ viewer_LDADD =									\
 viewer_CPPFLAGS =								\
 	$(RDLIB_CFLAGS)								\
 	$(RDUTILS_CFLAGS)							\
-	$(WX_CFLAGS)
+	$(WX_CPPFLAGS)
 
 viewer_SOURCES = viewer.cpp viewerapp.cpp
 

@@ -64,6 +64,26 @@ if test "x${HAVE_RDLIB}" != xyes ; then
   AC_MSG_ERROR([rdlib-0.1 >= $RDLIB_VER is required])
 fi
 
+AM_OPTIONS_WXCONFIG
+reqwx=2.8.0
+AM_PATH_WXCONFIG($reqwx, wxWin=1)
+if test "$wxWin" != 1; then
+	AC_MSG_ERROR([
+		wxWidgets must be installed on your system.
+ 
+		Please check that wx-config is in path, the directory
+		where wxWidgets libraries are installed (returned by
+		'wx-config --libs' or 'wx-config --static --libs' command)
+		is in LD_LIBRARY_PATH or equivalent variable and
+		wxWidgets version is $reqwx or above.
+		])
+fi
+
+AC_SUBST(WX_CPPFLAGS)
+AC_SUBST(WX_CXXFLAGS_ONLY)
+AC_SUBST(WX_CFLAGS_ONLY)
+AC_SUBST(WX_LIBS)
+
 AC_ARG_WITH([thread],
     AS_HELP_STRING([--with-thread=IMPL],[use threading library {auto,pthread,gthread,win32,none} [[default=auto]]]),
     [],
