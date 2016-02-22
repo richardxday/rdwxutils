@@ -224,9 +224,9 @@ void Viewer::OnMouseLeftUp(wxMouseEvent & event)
 
 	drag_action = Drag_Action_None;
 
-	settings.Set("view_xy", AString("%0.3lf").Arg(view.transform.xy));
-	settings.Set("view_yz", AString("%0.3lf").Arg(view.transform.yz));
-	settings.Set("view_xz", AString("%0.3lf").Arg(view.transform.xz));
+	settings.Set("view_xy", AString("%0.3").Arg(view.transform.xy));
+	settings.Set("view_yz", AString("%0.3").Arg(view.transform.yz));
+	settings.Set("view_xz", AString("%0.3").Arg(view.transform.xz));
 
 	Refresh(false);
 }
@@ -353,7 +353,7 @@ void Viewer::OnMouseWheel(wxMouseEvent & event)
 		view.transform.zoom *= pow(2.0, .1 * (double)event.GetWheelRotation() / 120.0);
 		view.transform.zoom = LIMIT(view.transform.zoom, 1.0e-5, 1.0e3);
 
-		settings.Set("view_zoom", AString("%0.4lf").Arg(view.transform.zoom));
+		settings.Set("view_zoom", AString("%0.4").Arg(view.transform.zoom));
 
 		Refresh();
 	}
