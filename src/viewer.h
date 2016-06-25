@@ -46,6 +46,7 @@ protected:
 	} LINE;
 
 	static void __deleteline(uptr_t item, void *context) {
+		(void)context;
 		delete (LINE *)item;
 	}
 

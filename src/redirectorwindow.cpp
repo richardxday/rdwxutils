@@ -233,11 +233,13 @@ RedirectorWindowFrame::~RedirectorWindowFrame()
 
 void RedirectorWindowFrame::OnToggleDebug(wxCommandEvent & event)
 {
+	(void)event;
 	m_outputdebug = m_menu->IsChecked(ID_ToggleDebug);
 }
 
 void RedirectorWindowFrame::OnClose(wxCommandEvent & event)
 {
+	(void)event;
 	Close(true);
 }
 
@@ -329,6 +331,7 @@ void RedirectorWindowFrame::destructor(ASocketServer *server, int socket, Connec
 
 void RedirectorWindowFrame::multi_connectionhandler(ASocketServer *server, int socket, MultiConnectionContext *context)
 {
+	(void)server;
 	m_socketlist.Add(socket);
 	context->m_socketlist.Add(socket);
 }
@@ -362,6 +365,7 @@ void RedirectorWindowFrame::multi_readhandler(ASocketServer *server, int socket,
 
 void RedirectorWindowFrame::multi_destructor(ASocketServer *server, int socket, MultiConnectionContext *context)
 {
+	(void)server;
 	if (context) {
 		m_socketlist.Remove(socket);
 		context->m_socketlist.Remove(socket);
@@ -377,6 +381,7 @@ void RedirectorWindowFrame::multi_destructor(ASocketServer *server, int socket, 
 
 void RedirectorWindowFrame::server_connectionhandler(ASocketServer *server, int socket, MultiConnectionContext *context)
 {
+	(void)server;
 	m_socketlist.Add(socket);
 	context->m_socketlist.Add(socket);
 }
@@ -426,6 +431,7 @@ void RedirectorWindowFrame::server_readhandler(ASocketServer *server, int socket
 
 void RedirectorWindowFrame::server_destructor(ASocketServer *server, int socket, MultiConnectionContext *context)
 {
+	(void)server;
 	if (context) {
 		m_socketlist.Remove(socket);
 		context->m_socketlist.Remove(socket);

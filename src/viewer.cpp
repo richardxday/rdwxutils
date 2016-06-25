@@ -170,7 +170,7 @@ bool Viewer::LoadFile()
 	return success;
 }
 
-void Viewer::OnSize(wxSizeEvent &sizeevent)
+void Viewer::OnSize(wxSizeEvent &)
 {
 	Refresh(false);
 }
@@ -188,15 +188,15 @@ void Viewer::OnEraseBackground(wxEraseEvent &)
 {
 }
 
-void Viewer::OnKeyUp(wxKeyEvent& evt)
+void Viewer::OnKeyUp(wxKeyEvent &)
 {
 }
 
-void Viewer::OnKeyDown(wxKeyEvent& evt)
+void Viewer::OnKeyDown(wxKeyEvent &)
 {
 }
 
-void Viewer::OnMouseLeftDoubleClick(wxMouseEvent & event)
+void Viewer::OnMouseLeftDoubleClick(wxMouseEvent &)
 {
 }
 
@@ -218,7 +218,7 @@ void Viewer::OnMouseLeftDown(wxMouseEvent & event)
 	Refresh(false);
 }
 
-void Viewer::OnMouseLeftUp(wxMouseEvent & event)
+void Viewer::OnMouseLeftUp(wxMouseEvent &)
 {
 	ReleaseMouse();
 
@@ -249,7 +249,7 @@ void Viewer::OnMouseRightDown(wxMouseEvent & event)
 	Refresh();
 }
 
-void Viewer::OnMouseRightUp(wxMouseEvent & event)
+void Viewer::OnMouseRightUp(wxMouseEvent &)
 {
 	ReleaseMouse();
 
