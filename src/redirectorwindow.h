@@ -42,46 +42,56 @@ protected:
 
 	typedef struct {
 		RedirectorWindowFrame *m_frame;
-		int m_destsocket;				// destination socket
-		uint64_t *m_total;				// ptr to data accumulator
+		int		 m_destsocket;				// destination socket
+		uint64_t *m_total;					// ptr to data accumulator
 	} ConnectionContext;
 
 	typedef struct _MultiConnectionContext {
 		RedirectorWindowFrame *m_frame;
-		uint64_t    *m_total;				// ptr to data accumulator
+		int		  m_socket;					// original socket
+		uint64_t  *m_total;					// ptr to data accumulator
 		ADataList m_socketlist;
 		struct _MultiConnectionContext *m_partner;
 	} MultiConnectionContext;
 
 	// static callbacks -> all redirect back into appropriate frame class
 	static void __connectionhandler(ASocketServer *server, int socket, void *context) {
-		((ConnectionContext *)context)->m_frame->connectionhandler(server, socket, (ConnectionContext *)context);
+		ConnectionContext *ccontext;
+		if (((ccontext = (ConnectionContext *)context) != NULL) && ccontext->m_frame) ccontext->m_frame->connectionhandler(server, socket, ccontext);
 	}
 	static void __readhandler(ASocketServer *server, int socket, void *context) {
-		((ConnectionContext *)context)->m_frame->readhandler(server, socket, (ConnectionContext *)context);
+		ConnectionContext *ccontext;
+		if (((ccontext = (ConnectionContext *)context) != NULL) && ccontext->m_frame) ccontext->m_frame->readhandler(server, socket, ccontext);
 	}
 	static void __destructor(ASocketServer *server, int socket, void *context) {
-		((ConnectionContext *)context)->m_frame->destructor(server, socket, (ConnectionContext *)context);
+		ConnectionContext *ccontext;
+		if (((ccontext = (ConnectionContext *)context) != NULL) && ccontext->m_frame) ccontext->m_frame->destructor(server, socket, ccontext);
 	}
 
 	static void __multi_connectionhandler(ASocketServer *server, int socket, void *context) {
-		((MultiConnectionContext *)context)->m_frame->multi_connectionhandler(server, socket, (MultiConnectionContext *)context);
+		MultiConnectionContext *ccontext;
+		if (((ccontext = (MultiConnectionContext *)context) != NULL) && ccontext->m_frame) ccontext->m_frame->multi_connectionhandler(server, socket, ccontext);
 	}
 	static void __multi_readhandler(ASocketServer *server, int socket, void *context) {
-		((MultiConnectionContext *)context)->m_frame->multi_readhandler(server, socket, (MultiConnectionContext *)context);
+		MultiConnectionContext *ccontext;
+		if (((ccontext = (MultiConnectionContext *)context) != NULL) && ccontext->m_frame) ccontext->m_frame->multi_readhandler(server, socket, ccontext);
 	}
 	static void __multi_destructor(ASocketServer *server, int socket, void *context) {
-		((MultiConnectionContext *)context)->m_frame->multi_destructor(server, socket, (MultiConnectionContext *)context);
+		MultiConnectionContext *ccontext;
+		if (((ccontext = (MultiConnectionContext *)context) != NULL) && ccontext->m_frame) ccontext->m_frame->multi_destructor(server, socket, ccontext);
 	}
 
 	static void __server_connectionhandler(ASocketServer *server, int socket, void *context) {
-		((MultiConnectionContext *)context)->m_frame->server_connectionhandler(server, socket, (MultiConnectionContext *)context);
+		MultiConnectionContext *ccontext;
+		if (((ccontext = (MultiConnectionContext *)context) != NULL) && ccontext->m_frame) ccontext->m_frame->server_connectionhandler(server, socket, ccontext);
 	}
 	static void __server_readhandler(ASocketServer *server, int socket, void *context) {
-		((MultiConnectionContext *)context)->m_frame->server_readhandler(server, socket, (MultiConnectionContext *)context);
+		MultiConnectionContext *ccontext;
+		if (((ccontext = (MultiConnectionContext *)context) != NULL) && ccontext->m_frame) ccontext->m_frame->server_readhandler(server, socket, ccontext);
 	}
 	static void __server_destructor(ASocketServer *server, int socket, void *context) {
-		((MultiConnectionContext *)context)->m_frame->server_destructor(server, socket, (MultiConnectionContext *)context);
+		MultiConnectionContext *ccontext;
+		if (((ccontext = (MultiConnectionContext *)context) != NULL) && ccontext->m_frame) ccontext->m_frame->server_destructor(server, socket, ccontext);
 	}
 
 	void connectionhandler(ASocketServer *server, int socket, ConnectionContext *context);

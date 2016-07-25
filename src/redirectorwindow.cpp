@@ -9,6 +9,8 @@
 
 #include "redirectorwindow.h"
 
+#define DEBUG_SOCKETS 0
+
 enum
 {
 	ID_ToggleDebug = 1,
@@ -41,6 +43,8 @@ RedirectorWindowFrame::RedirectorWindowFrame(wxWindow *parent,
 	m_last_txbytes(0),
 	m_outputdebug(false)
 {
+	SetBackgroundStyle(wxBG_STYLE_PAINT);
+
 	// window graphics update rate = 100ms
 	m_timer.Start(100);
 
@@ -65,8 +69,18 @@ RedirectorWindowFrame::RedirectorWindowFrame(wxWindow *parent,
 													 NULL,
 													 context)) >= 0) {
 					m_socketlist.Add(socket);
+#if DEBUG_SOCKETS
+					debug("Created SC handler socket %d context %s\n", socket, AValue(context).ToString().str());
+#endif
 				}
-				else delete context;
+				else {
+					wxMessageDialog dlg(this,
+										wxString::Format(_T("Unable to create server at %s:%u"), localaddr.c_str(), localport),
+										_T("Connection Failure"),
+										wxICON_ERROR | wxOK);
+					dlg.ShowModal();
+					delete context;
+				}
 			}
 			break;
 		}
@@ -78,47 +92,58 @@ RedirectorWindowFrame::RedirectorWindowFrame(wxWindow *parent,
 			context2 = new ConnectionContext;
 
 			if (context1 && context2) {
-				int socket1, socket2;
-
 				context1->m_frame = this;
-				context2->m_frame = this;
 				context1->m_total = &m_rxbytes;
+
+				context2->m_frame = this;
 				context2->m_total = &m_txbytes;
 
 				// create TWO client connections and connect them to each other
-				socket2 = m_server.CreateHandler(ASocketServer::Type_Client,
-												 _AString(localaddr).str(),
-												 localport,
-												 NULL,
-												 &__readhandler,
-												 NULL,
-												 &__destructor,
-												 NULL,
-												 context1);
+				int socket1, socket2;
+				if ((socket1 = m_server.CreateHandler(ASocketServer::Type_Client,
+													   _AString(localaddr).str(),
+													   localport,
+													   NULL,
+													   &__readhandler,
+													   NULL,
+													   &__destructor,
+													   NULL,
+													  context1)) >= 0) {
+					if ((socket2 = m_server.CreateHandler(ASocketServer::Type_Client,
+														  _AString(remoteaddr).str(),
+														  remoteport,
+														  NULL,
+														  &__readhandler,
+														  NULL,
+														  &__destructor,
+														  NULL,
+														  context2)) >= 0) {
+						context1->m_destsocket = socket2;
+						context2->m_destsocket = socket1;
 
-				socket1 = m_server.CreateHandler(ASocketServer::Type_Client,
-												 _AString(remoteaddr).str(),
-												 remoteport,
-												 NULL,
-												 &__readhandler,
-												 NULL,
-												 &__destructor,
-												 NULL,
-												 context2);
+						m_socketlist.Add(context1->m_destsocket);
+						m_socketlist.Add(context2->m_destsocket);
+					}
+					else {
+						wxMessageDialog dlg(this,
+											wxString::Format(_T("Unable to connect to %s:%u (remote)"), remoteaddr.c_str(), remoteport),
+											_T("Connection Failure"),
+											wxICON_ERROR | wxOK);
+						dlg.ShowModal();
 
-				if ((socket1 >= 0) &&
-					(socket2 >= 0)) {
-					context1->m_destsocket = socket1;
-					context2->m_destsocket = socket2;
-
-					m_socketlist.Add(context1->m_destsocket);
-					m_socketlist.Add(context2->m_destsocket);
+						delete context2;
+						m_server.DeleteHandler(socket1);
+					}
 				}
 				else {
-					if (socket1 >= 0) m_server.DeleteHandler(socket1);
-					else			  delete context2;
-					if (socket2 >= 0) m_server.DeleteHandler(socket2);
-					else			  delete context1;
+					wxMessageDialog dlg(this,
+										wxString::Format(_T("Unable to connect to %s:%u (local)"), localaddr.c_str(), localport),
+										_T("Connection Failure"),
+										wxICON_ERROR | wxOK);
+					dlg.ShowModal();
+					
+					delete context2;
+					delete context1;
 				}
 			}
 			else {
@@ -147,32 +172,51 @@ RedirectorWindowFrame::RedirectorWindowFrame(wxWindow *parent,
 				context2->m_partner = context1;
 
 				int socket1, socket2;
-				socket1 = m_server.CreateHandler(ASocketServer::Type_Server,
-												 (localaddr.Len() > 0) ? _AString(localaddr).str() : NULL,
-												 localport,
-												 &__server_connectionhandler,
-												 &__server_readhandler,
-												 NULL,
-												 &__server_destructor,
-												 NULL,
-												 context1);
-				socket2 = m_server.CreateHandler(ASocketServer::Type_Server,
-												 (remoteaddr.Len() > 0) ? _AString(remoteaddr).str() : NULL,
-												 remoteport,
-												 &__server_connectionhandler,
-												 &__server_readhandler,
-												 NULL,
-												 &__server_destructor,
-												 NULL,
-												 context2);
+				if ((socket1 = m_server.CreateHandler(ASocketServer::Type_Server,
+													  (localaddr.Len() > 0) ? _AString(localaddr).str() : NULL,
+													  localport,
+													  &__server_connectionhandler,
+													  &__server_readhandler,
+													  NULL,
+													  &__server_destructor,
+													  NULL,
+													  context1)) >= 0) {
+					context1->m_socket = socket1;
+					
+					if ((socket2 = m_server.CreateHandler(ASocketServer::Type_Server,
+														  (remoteaddr.Len() > 0) ? _AString(remoteaddr).str() : NULL,
+														  remoteport,
+														  &__server_connectionhandler,
+														  &__server_readhandler,
+														  NULL,
+														  &__server_destructor,
+														  NULL,
+														  context2)) >= 0) {
+						context2->m_socket = socket2;
+						
+						m_socketlist.Add(socket1);
+						m_socketlist.Add(socket2);
+					}
+					else {
+						wxMessageDialog dlg(this,
+											wxString::Format(_T("Unable to create server at %s:%u (remote)"), remoteaddr.c_str(), remoteport),
+											_T("Connection Failure"),
+											wxICON_ERROR | wxOK);
+						dlg.ShowModal();
 
-				if ((socket1 >= 0) && (socket2 >= 0)) {
-					m_socketlist.Add(socket1);
-					m_socketlist.Add(socket2);
+						delete context2;
+						m_server.DeleteHandler(socket1);
+					}
 				}
 				else {
-					if (socket1 >= 0) m_server.DeleteHandler(socket1);
-					if (socket2 >= 0) m_server.DeleteHandler(socket2);
+					wxMessageDialog dlg(this,
+										wxString::Format(_T("Unable to create server at %s:%u (local)"), localaddr.c_str(), localport),
+										_T("Connection Failure"),
+										wxICON_ERROR | wxOK);
+					dlg.ShowModal();
+
+					delete context2;
+					delete context1;
 				}
 			}
 			else {
@@ -201,7 +245,16 @@ RedirectorWindowFrame::RedirectorWindowFrame(wxWindow *parent,
 													 &__multi_destructor,
 													 NULL,
 													 context)) >= 0) {
+					context->m_socket = socket;
 					m_socketlist.Add(socket);
+				}
+				else {
+					wxMessageDialog dlg(this,
+										wxString::Format(_T("Unable to create server at %s:%u"), localaddr.c_str(), localport),
+										_T("Connection Failure"),
+										wxICON_ERROR | wxOK);
+					dlg.ShowModal();
+					delete context;
 				}
 			}
 			break;
@@ -235,6 +288,8 @@ void RedirectorWindowFrame::OnToggleDebug(wxCommandEvent & event)
 {
 	(void)event;
 	m_outputdebug = m_menu->IsChecked(ID_ToggleDebug);
+	if (m_outputdebug) debug("Debug enabled on connection %s\n", _AString(GetTitle()).str());
+	else			   debug("Debug *disabled* on connection %s\n", _AString(GetTitle()).str());
 }
 
 void RedirectorWindowFrame::OnClose(wxCommandEvent & event)
@@ -251,50 +306,83 @@ void RedirectorWindowFrame::connectionhandler(ASocketServer *server, int socket,
 	context2 = new ConnectionContext;
 
 	if (context1 && context2) {
+		int socket2;
+
 		*context1 = *context;
 		*context2 = *context;
 
-		m_socketlist.Add(socket);
+		if ((socket2 = server->CreateHandler(ASocketServer::Type_Client,
+											 _AString(m_remoteaddr),
+											 m_remoteport,
+											 NULL,
+											 &__readhandler,
+											 NULL,
+											 &__destructor,
+											 NULL,
+											 context2)) >= 0) {
+			context1->m_destsocket = socket2;
+			context1->m_total = &m_txbytes;
+			server->SetContext(socket, context1);
 
-		context1->m_total = &m_txbytes;
-		server->SetContext(socket, context1);
+			context2->m_destsocket = socket;
+			context2->m_total = &m_rxbytes;
 
-		context2->m_destsocket = socket;
-		context2->m_total = &m_rxbytes;
-
-		if ((socket = server->CreateHandler(ASocketServer::Type_Client,
-											_AString(m_remoteaddr),
-											m_remoteport,
-											NULL,
-											&__readhandler,
-											NULL,
-											&__destructor,
-											NULL,
-											context2)) >= 0) {
+#if DEBUG_SOCKETS
+			debug("Connected to %s:%u using socket %d (context %s) from socket %d (context %s), original context %s (server-client)\n",
+				  _AString(m_remoteaddr).str(),
+				  m_remoteport,
+				  socket2,
+				  AValue(context2).ToString().str(),
+				  socket,
+				  AValue(context1).ToString().str(),
+				  AValue(context).ToString().str());
+#endif
+			
 			m_socketlist.Add(socket);
-			context1->m_destsocket = socket;
+			m_socketlist.Add(socket2);
 		}
 		else {
-			wxString msg;
-			msg.Printf(_T("Unable to connect to %s:%u"), m_remoteaddr.c_str(), m_remoteport);
+			debug("Failed to connect to %s:%u\n", _AString(m_remoteaddr).str(), m_remoteport);
 
-			wxMessageDialog dlg(this, msg, _T("Connection Failure"), wxICON_ERROR | wxOK);
+			wxMessageDialog dlg(this,
+								wxString::Format(_T("Unable to connect to %s:%u"), m_remoteaddr.c_str(), m_remoteport),
+								_T("Connection Failure"),
+								wxICON_ERROR | wxOK);
 			dlg.ShowModal();
 
-			server->DeleteHandler(context2->m_destsocket);
+			server->SetContext(socket, NULL);
+			server->DeleteHandler(socket);
+			
+			if (context2) delete context2;
 		}
 	}
 	else {
-		wxString msg;
-		msg.Printf(_T("Unable to allocate resouces for connection to %s:%u"), m_remoteaddr.c_str(), m_remoteport);
-
-		wxMessageDialog dlg(this, msg, _T("Connection Failure"), wxICON_ERROR | wxOK);
+		wxMessageDialog dlg(this,
+							wxString::Format(_T("Unable to allocate resources for connection to %s:%u"), m_remoteaddr.c_str(), m_remoteport),
+							_T("Connection Failure"),
+							wxICON_ERROR | wxOK);
 		dlg.ShowModal();
 
+		server->SetContext(socket, NULL);
 		server->DeleteHandler(socket);
 
 		if (context1) delete context1;
 		if (context2) delete context2;
+	}
+}
+
+void RedirectorWindowFrame::outputdata(int socket, const char *desc, const uint8_t *data, uint_t bytes)
+{
+	if (m_outputdebug) {
+		// output debug information
+		AString str;
+		uint_t i;
+
+		str.printf("%s: Socket %d %s %u bytes:", ADateTime().DateFormat("%Y-%M-%D %h:%m:%s.%S").str(), socket, desc, bytes);
+		for (i = 0; i < bytes; i++) {
+			str.printf(" %02x", (uint_t)data[i]);
+		}
+		debug("%s\n", str.str());
 	}
 }
 
@@ -322,15 +410,25 @@ void RedirectorWindowFrame::destructor(ASocketServer *server, int socket, Connec
 		if (context->m_destsocket >= 0) {
 			server->DeleteHandler(context->m_destsocket);
 			m_socketlist.Remove(context->m_destsocket);
-			m_socketlist.Remove(socket);
 		}
+		m_socketlist.Remove(socket);
 
+#if DEBUG_SOCKETS
+		debug("Deleting handler for socket %d (context %s)\n", socket, AValue(context).ToString().str());
+#endif
+		
 		delete context;
 	}
 }
 
 void RedirectorWindowFrame::multi_connectionhandler(ASocketServer *server, int socket, MultiConnectionContext *context)
 {
+#if DEBUG_SOCKETS
+	debug("New multi connection socket %d (context %s)\n",
+		  socket,
+		  AValue(context).ToString().str());
+#endif
+	
 	(void)server;
 	m_socketlist.Add(socket);
 	context->m_socketlist.Add(socket);
@@ -370,10 +468,15 @@ void RedirectorWindowFrame::multi_destructor(ASocketServer *server, int socket, 
 		m_socketlist.Remove(socket);
 		context->m_socketlist.Remove(socket);
 
-		if (context->m_socketlist.Count() == 0) {
+		if ((socket == context->m_socket) && (context->m_socketlist.Count() == 0)) {
 			if (context->m_partner && (context->m_partner->m_partner == context)) {
 				context->m_partner->m_partner = NULL;
 			}
+
+#if DEBUG_SOCKETS
+			debug("Deleting multi context %s for socket %d\n", AValue(context).ToString().str(), socket);
+#endif
+			
 			delete context;
 		}
 	}
@@ -381,24 +484,15 @@ void RedirectorWindowFrame::multi_destructor(ASocketServer *server, int socket, 
 
 void RedirectorWindowFrame::server_connectionhandler(ASocketServer *server, int socket, MultiConnectionContext *context)
 {
+#if DEBUG_SOCKETS
+	debug("New server connection socket %d (context %s)\n",
+		  socket,
+		  AValue(context).ToString().str());
+#endif
+	
 	(void)server;
 	m_socketlist.Add(socket);
 	context->m_socketlist.Add(socket);
-}
-
-void RedirectorWindowFrame::outputdata(int socket, const char *desc, const uint8_t *data, uint_t bytes)
-{
-	if (m_outputdebug) {
-		// output debug information
-		AString str;
-		uint_t i;
-
-		str.printf("%s: Socket %d %s %u bytes:", ADateTime().DateFormat("%Y-%M-%D %h:%m:%s.%S").str(), socket, desc, bytes);
-		for (i = 0; i < bytes; i++) {
-			str.printf(" %02x", (uint_t)data[i]);
-		}
-		debug("%s\n", str.str());
-	}
 }
 
 void RedirectorWindowFrame::server_readhandler(ASocketServer *server, int socket, MultiConnectionContext *context)
@@ -436,10 +530,15 @@ void RedirectorWindowFrame::server_destructor(ASocketServer *server, int socket,
 		m_socketlist.Remove(socket);
 		context->m_socketlist.Remove(socket);
 
-		if (context->m_socketlist.Count() == 0) {
+		if ((socket == context->m_socket) && (context->m_socketlist.Count() == 0)) {
 			if (context->m_partner && (context->m_partner->m_partner == context)) {
 				context->m_partner->m_partner = NULL;
 			}
+
+#if DEBUG_SOCKETS
+			debug("Deleting server context %s for socket %d\n", AValue(context).ToString().str(), socket);
+#endif
+			
 			delete context;
 		}
 	}
