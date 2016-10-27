@@ -10,10 +10,9 @@ EXTRA_CFLAGS += $(shell wx-config --cppflags)
 EXTRA_LIBS   += $(shell pkg-config --libs rdlib-0.1)
 EXTRA_LIBS   += $(shell wx-config --libs)
 
-LOCAL_CFLAGS := -Iredirector
-
-APPLICATION := redirector
-OBJECTS     := $(APPLICATION:%=%.o) redirectorwindow.o
+APPLICATION  := redirector
+LOCAL_CFLAGS += -I$(APPLICATION)
+OBJECTS      := $(APPLICATION:%=%.o) redirectorwindow.o
 include $(MAKEFILEDIR)/makefile.app
 
 APPLICATION := viewer
