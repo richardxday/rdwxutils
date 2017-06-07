@@ -540,7 +540,7 @@ void RedirectorWindowFrame::OnTimer(wxTimerEvent &)
 	Refresh(false);
 }
 
-void RedirectorWindowFrame::OnPaint (wxPaintEvent &)
+void RedirectorWindowFrame::OnPaint(wxPaintEvent &)
 {
 	wxAutoBufferedPaintDC dc(this);
 
