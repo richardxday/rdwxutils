@@ -3,7 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <string>
+#include <vector>
+#include <map>
+
 #include <wx/dcbuffer.h>
+#include <wx/filename.h>
 
 #ifdef __CYGWIN__
 #undef _WIN32
@@ -61,7 +66,7 @@ Viewer::Viewer(int argc, wxChar **argv) : wxFrame((wxFrame *)NULL,
 	filename = AString::Cast(filelist.First());
 	LoadFile();
 }
-										  
+
 Viewer::~Viewer()
 {
 }
@@ -156,7 +161,7 @@ bool Viewer::LoadFile()
 		wxMessageDialog dlg(this,
 							wxString::Format(_T("Failed to open file '%s'"), _wxString(*filename).c_str()),
 							_T("File open failed!"), wxICON_ERROR | wxOK);
-			
+
 		dlg.ShowModal();
 
 		AString *filename1;
@@ -297,14 +302,14 @@ void Viewer::OnMouseMove(wxMouseEvent & event)
 		}
 
 		case Drag_Action_Move: {
-			A3DPoint pos((double)(mousepos.x + drag_move_offset.x - view.cx), 
+			A3DPoint pos((double)(mousepos.x + drag_move_offset.x - view.cx),
 						 (double)(mousepos.y + drag_move_offset.y - view.cy),
 						 drag_start_pos.z);
-			
+
 			A3DView tempview = view;
 			tempview.translation = A3DPoint();
 			view.translation = pos / tempview;
-			
+
 			Refresh();
 			break;
 		}
@@ -365,7 +370,7 @@ void Viewer::OnPaint(wxPaintEvent &)
 
 	dc.SetBackground(wxBrush(GetBackgroundColour()));
 	dc.Clear();
-	
+
 	wxSize sz = GetClientSize();
 
 	view.cx = .5 * (double)sz.GetWidth();
@@ -378,16 +383,17 @@ void Viewer::OnPaint(wxPaintEvent &)
 	wxRect rect(-32768, -32768, 65535, 65535);
 	const LINE **lines = (const LINE **)linelist.List();
 	uint_t i, n = linelist.Count();
+
 	for (i = 0; i < n; i++) {
 		if (!view_index || (lines[i]->index == (view_index - 1))) {
 			A3DPoint pt1 = lines[i]->pt1 * view;
 			A3DPoint pt2 = lines[i]->pt2 * view;
 			wxPoint  p1((int)pt1.x, (int)pt1.y);
 			wxPoint  p2((int)pt2.x, (int)pt2.y);
-		
+
 			if (rect.Contains(p1) && rect.Contains(p2)) {
 				dc.SetPen(lines[i]->pen);
-			
+
 				dc.DrawLine((int)pt1.x, (int)pt1.y,
 							(int)pt2.x, (int)pt2.y);
 			}

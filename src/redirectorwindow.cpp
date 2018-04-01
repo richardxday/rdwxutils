@@ -601,6 +601,6 @@ void RedirectorWindowFrame::OnPaint(wxPaintEvent &)
 	str.Printf(_T("Tx: %uk"), txk);
 	dc.SetTextForeground(wxColour(0, 0, 255));
 	dc.DrawText(str, pos.x, pos.y); pos.y += sz_h + 10;
-	
+
 	dc.SetFont(wxNullFont);
 }
