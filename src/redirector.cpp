@@ -93,9 +93,9 @@ bool RedirectorApp::OnInit()
     wxImage::AddHandler( new wxPNGHandler );
 #endif
 
-    RedirectorFrame *frame = new RedirectorFrame (argc, argv,
-												  _T(PRODUCT_NAME " - " VER_STRING),
-												  wxPoint(200, 200), wxSize(540, 140));
+    RedirectorFrame *frame = new RedirectorFrame(argc, argv,
+												 _T(PRODUCT_NAME " - " VER_STRING),
+												 wxPoint(200, 200), wxSize(540, 140));
 
     frame->Show (true);
     SetTopWindow (frame);
@@ -171,7 +171,7 @@ RedirectorFrame::RedirectorFrame(int argc, wxChar **argv, const wxString& title,
 		if (frame && frame->Valid()) {
 			// connection(s) created okay -> show window and add frame to childlist
 			frame->Show (true);
-	
+
 			m_childlist.Add((uptr_t)frame);
 		}
 		else {
@@ -189,7 +189,7 @@ RedirectorFrame::RedirectorFrame(int argc, wxChar **argv, const wxString& title,
 RedirectorFrame::~RedirectorFrame()
 {
 	RedirectorWindowFrame *frame;
-	
+
 	// for all children still operational, Destroy and then delete the frames
 	while ((frame = (RedirectorWindowFrame *)m_childlist.Pop()) != NULL) {
 		frame->Destroy();
@@ -242,7 +242,7 @@ void RedirectorFrame::OnNewConnection(uint_t type)
 
 	{
 		wxTextEntryDialog dlg(this,
-							  localaddrmsg, 
+							  localaddrmsg,
 							  _T("New Connection"),
 							  localaddr);
 
@@ -257,10 +257,10 @@ void RedirectorFrame::OnNewConnection(uint_t type)
 
 		tmp.Printf(_T("%ld"), localport);
 		wxTextEntryDialog dlg(this,
-							  localportmsg, 
+							  localportmsg,
 							  _T("New Connection"),
 							  tmp);
-		
+
 		if (dlg.ShowModal() == wxID_OK) {
 			dlg.GetValue().ToLong(&localport);
 		}
@@ -271,7 +271,7 @@ void RedirectorFrame::OnNewConnection(uint_t type)
 		// don't need second address-port pair for multi-client
 		{
 			wxTextEntryDialog dlg(this,
-								  remoteaddrmsg, 
+								  remoteaddrmsg,
 								  _T("New Connection"),
 								  remoteaddr);
 
@@ -289,7 +289,7 @@ void RedirectorFrame::OnNewConnection(uint_t type)
 								  remoteportmsg,
 								  _T("New Connection"),
 								  tmp);
-		
+
 			if (dlg.ShowModal() == wxID_OK) {
 				dlg.GetValue().ToLong(&remoteport);
 			}
@@ -303,24 +303,24 @@ void RedirectorFrame::OnNewConnection(uint_t type)
 	switch (type) {
 		default:
 		case RedirectorWindowFrame::Type_Server_Client:
-			title.Printf(_T("Server-Client Connection from %s:%ld to %s:%ld"), 
+			title.Printf(_T("Server-Client Connection from %s:%ld to %s:%ld"),
 						 localaddr.c_str(), localport,
 						 remoteaddr.c_str(), remoteport);
 			break;
 
 		case RedirectorWindowFrame::Type_Client_Client:
-			title.Printf(_T("Client-Client Connection from %s:%ld to %s:%ld"), 
+			title.Printf(_T("Client-Client Connection from %s:%ld to %s:%ld"),
 						 localaddr.c_str(), localport,
 						 remoteaddr.c_str(), remoteport);
 			break;
 
 		case RedirectorWindowFrame::Type_Multi_Client:
-			title.Printf(_T("Multi-Client Server at %s:%ld"), 
+			title.Printf(_T("Multi-Client Server at %s:%ld"),
 						 localaddr.c_str(), localport);
 			break;
 
 		case RedirectorWindowFrame::Type_Server_Server:
-			title.Printf(_T("Server-Server Connection from %s:%ld to %s:%ld"), 
+			title.Printf(_T("Server-Server Connection from %s:%ld to %s:%ld"),
 						 localaddr.c_str(), localport,
 						 remoteaddr.c_str(), remoteport);
 			break;
@@ -338,7 +338,7 @@ void RedirectorFrame::OnNewConnection(uint_t type)
 	if (frame && frame->Valid()) {
 		// connection(s) created okay -> show window and add frame to childlist
 		frame->Show (true);
-	
+
 		m_childlist.Add((uptr_t)frame);
 	}
 	else {
@@ -420,6 +420,6 @@ void RedirectorFrame::OnPaint (wxPaintEvent &)
 
 	dc.SetTextForeground(wxColour(0, 0, 0));
 	dc.DrawText(str, pos.x, pos.y); pos.y += sz_h + 10;
-	
+
 	dc.SetFont(wxNullFont);
 }
