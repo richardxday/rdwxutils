@@ -26,7 +26,7 @@ IMPLEMENT_APP(ViewerApp)
 
 bool ViewerApp::OnInit()
 {
-	wxImage::AddHandler(new wxPNGHandler);
+    wxImage::AddHandler(new wxPNGHandler);
 
     Viewer *frame = new Viewer(argc, argv);
     frame->Show(true);
@@ -37,6 +37,5 @@ bool ViewerApp::OnInit()
 
 int ViewerApp::OnExit()
 {
-	return wxApp::OnExit();
+    return wxApp::OnExit();
 }
-
