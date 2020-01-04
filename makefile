@@ -6,7 +6,7 @@ MAKEFILEDIR := $(shell rdlib-config --makefiles)
 include $(MAKEFILEDIR)/makefile.init
 
 EXTRA_CFLAGS += $(shell pkg-config --cflags rdlib-0.1)
-EXTRA_CFLAGS += $(shell wx-config --cppflags) -Wno-ignored-qualifiers -Wno-cast-function-type
+EXTRA_CFLAGS += $(shell wx-config --cppflags) -Wno-ignored-qualifiers -Wno-cast-function-type -Wno-deprecated-copy
 EXTRA_LIBS	 += $(shell pkg-config --libs rdlib-0.1)
 EXTRA_LIBS	 += $(shell wx-config --libs)
 
