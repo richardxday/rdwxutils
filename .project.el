@@ -6,6 +6,7 @@
                           "extra"
                           "everything"))
              (packages . ("rdlib-0.1"))
+             (configcommands . ("wx-config --cppflags"))
              (sources . ("src"
                          "../rdlib/include"
                          "../rdlib/src"))
